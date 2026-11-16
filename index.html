@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FBF0E1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Todo">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Todo</title>
+<style>
+:root{--bg:#FBF0E1;--card:#FFF8EE;--sand:#F6E3C8;--terra:#C8502B;--navy:#2F4B73;--olive:#7A8B50;--mauve:#C9A6A9;--maroon:#7E4A4C;--mustard:#E8B35E;--ochre:#B27A1F;--light-orange:#F4A259;--brown:#3B2A22}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--brown);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);overscroll-behavior-y:contain}
+button,input{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app{max-width:560px;margin:0 auto;min-height:100dvh;padding:14px 16px 110px;position:relative}
+.banner{height:215px;border-radius:28px;overflow:hidden;background:var(--sand);position:relative}
+.banner svg{width:100%;height:100%;display:block}
+.date-label{position:absolute;left:18px;top:10px;display:flex;flex-direction:column;gap:3px;color:var(--brown);text-shadow:0 1px 0 #fff8}
+.year{font:700 34px Georgia,serif}.monthday{font:700 22px Georgia,serif}.weekday{font-size:13px;font-weight:600;color:#3B2A22bf;display:flex;align-items:center;gap:6px}.weekday:before{content:"";width:12px;height:1.5px;background:var(--terra)}
+.sun-label{position:absolute;left:73%;top:35%;transform:translate(-50%,-50%);color:var(--card);display:flex;align-items:center;flex-direction:column;gap:4px}
+.sun-label .spark{font-size:13px}.sun-label strong{font:italic 700 32px Georgia,serif}.sun-label i{width:34px;height:1.5px;background:var(--card)}
+.summary{display:flex;align-items:center;gap:10px;margin:14px 4px 14px;font-size:14px;font-weight:700}.summary .spacer{flex:1}
+.today-btn{border:0;border-radius:99px;background:var(--terra);color:var(--card);padding:8px 12px;font-size:12px;font-weight:700}
+.arrow{width:46px;height:46px;border:0;border-radius:50%;background:var(--navy);color:var(--card);font-size:20px;font-weight:900;box-shadow:0 3px 7px #2f4b734d;position:relative}
+.arrow:after{content:"";position:absolute;inset:3px;border:1px solid #fff8;border-radius:50%}
+.progress{height:5px;background:#7A8B5040;border-radius:99px;margin:0 4px 14px;overflow:hidden}.progress>div{height:100%;background:var(--olive);border-radius:99px;transition:width .35s}
+.task-list{display:flex;flex-direction:column;gap:14px;transition:transform .28s,opacity .28s}
+.card{background:var(--card);border-radius:22px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 10px #3B2A2214;min-width:0}
+.check{border:2.5px solid var(--mauve);background:var(--card);border-radius:9px;width:32px;height:32px;flex:0 0 32px;color:var(--card);display:grid;place-items:center;font-size:18px;font-weight:900;transition:.25s}
+.check.done{background:var(--olive);border-color:var(--olive)}
+.task-main{min-width:0;flex:1}.task-title{font-size:16px;font-weight:500;overflow-wrap:anywhere}.task-title.done{text-decoration:line-through;color:#3B2A2266}
+.due{display:inline-block;margin-top:6px;padding:3px 8px;border-radius:99px;font-size:12px;font-weight:700}
+.menu{border:0;background:transparent;color:#3B2A2280;font-size:22px;width:32px;height:36px}
+.empty{text-align:center;white-space:pre-line;color:#3B2A227f;padding:30px 0 10px;line-height:1.7}.empty .leaf{font-size:48px;margin-bottom:8px}
+.add{position:fixed;right:max(20px,calc((100vw - 560px)/2 + 20px));bottom:max(20px,calc(env(safe-area-inset-bottom) + 16px));width:64px;height:64px;border:0;border-radius:50%;background:var(--navy);color:var(--card);font-size:30px;font-weight:700;box-shadow:0 4px 12px #2f4b7366;z-index:4}
+.modal-backdrop{position:fixed;inset:0;background:#0005;display:none;align-items:flex-end;justify-content:center;z-index:10}.modal-backdrop.open{display:flex}
+.modal{width:min(100%,560px);background:var(--bg);border-radius:24px 24px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px #0002}
+.modal h2{font-size:18px;margin:0 0 20px}.field{margin:16px 0}.field label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}.field input{width:100%;border:1px solid #c9a6a9;border-radius:12px;background:var(--card);padding:13px;color:var(--brown);font-size:16px}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:22px}.actions button{border:0;border-radius:99px;padding:11px 18px;font-weight:700}.cancel{background:#ead9c8;color:var(--brown)}.save{background:var(--terra);color:white}.done-stamp{width:44px;height:44px;position:relative;flex:0 0 44px}.done-stamp span{position:absolute;color:var(--light-orange);font-size:20px;animation:pop .45s both}.done-stamp span:nth-child(2){left:17px;top:0;font-size:14px;animation-delay:.08s}.done-stamp span:nth-child(3){left:17px;top:23px;font-size:10px;animation-delay:.16s}.done-stamp span:nth-child(4){left:0;top:22px;font-size:9px;animation-delay:.24s}
+@keyframes pop{from{transform:scale(0) rotate(-120deg);opacity:0}to{transform:scale(1);opacity:1}}
+.toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#3B2A22e8;color:white;padding:9px 14px;border-radius:99px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}.toast.show{opacity:1}
+@media(min-width:600px){.app{padding-top:24px}.modal-backdrop{align-items:center}.modal{border-radius:24px;padding-bottom:24px}}
+</style>
+</head>
+<body>
+<main class="app" id="app">
+  <section class="banner" aria-label="Todo banner">
+    <svg viewBox="0 0 600 215" preserveAspectRatio="none" role="img" aria-label="太陽と丘と松の木">
+      <circle cx="438" cy="86" r="67" fill="#C8502B"/>
+      <path d="M0 86 Q60 55 156 56 Q240 60 312 112 Q395 150 492 129 Q548 118 600 116 L600 235 L0 235Z" fill="#FFF8EE"/>
+      <path d="M0 118 Q72 103 168 95 Q264 96 348 145 Q432 178 516 157 Q558 145 600 142 L600 235 L0 235Z" fill="#2F4B73"/>
+      <path d="M0 150 Q96 133 204 138 Q310 153 408 190 Q480 207 540 190 Q575 180 600 178 L600 235 L0 235Z" fill="#FFF8EE"/>
+      <path d="M0 157 Q96 140 204 145 Q310 160 408 197 Q480 214 540 197 Q575 187 600 185 L600 235 L0 235Z" fill="#C9A6A9"/>
+      <path d="M0 205 Q100 190 220 198 Q300 206 390 225 L0 235Z" fill="#FFF8EE"/>
+      <path d="M0 211 Q100 196 220 204 Q300 212 390 231 L0 235Z" fill="#7E4A4C"/>
+      <path d="M240 235 Q330 198 445 194 Q520 192 600 202 L600 235Z" fill="#7A8B50"/>
+      <g fill="#FFF8EE">
+        <path d="M546 43 L566 82 L555 82 L576 117 L562 117 L586 151 L554 151 L554 158 L540 158 L540 151 L509 151 L532 117 L519 117 L541 82 L530 82Z"/>
+        <path d="M487 94 L501 120 L493 120 L508 143 L497 143 L515 165 L494 165 L494 171 L482 171 L482 165 L461 165 L476 143 L465 143 L479 120 L471 120Z"/>
+      </g>
+    </svg>
+    <div class="date-label"><div class="year" id="year"></div><div class="monthday" id="monthday"></div><div class="weekday" id="weekday"></div></div>
+    <div class="sun-label"><span class="spark">✧</span><strong>Todo</strong><i></i></div>
+  </section>
+  <section class="summary"><span id="summary">Todoなし</span><span class="spacer"></span><button class="today-btn" id="todayBtn" hidden>今日に戻る</button><button class="arrow" id="prev" aria-label="前の日">‹</button><button class="arrow" id="next" aria-label="次の日">›</button></section>
+  <div class="progress" id="progress" hidden><div id="progressFill"></div></div>
+  <section class="task-list" id="tasks"></section>
+</main>
+<button class="add" id="add" aria-label="Todoを追加">＋</button>
+<div class="modal-backdrop" id="backdrop">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">新しいTodo</h2>
+    <div class="field"><label for="taskTitle">やること</label><input id="taskTitle" type="text" placeholder="Todoを入力" maxlength="160"></div>
+    <div class="field"><label for="dueDate">期限日</label><input id="dueDate" type="date"></div>
+    <div class="actions"><button class="cancel" id="cancel">キャンセル</button><button class="save" id="save">保存</button></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const KEY='savedTasks';
+let todos=[],selectedDay=startOfDay(new Date()),today=startOfDay(new Date()),editingId=null,justCompletedID=null;
+const $=id=>document.getElementById(id);
+function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fromKey(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function sameDay(a,b){return dateKey(a)===dateKey(b)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return startOfDay(x)}
+function load(){try{todos=JSON.parse(localStorage.getItem(KEY)||'[]').map(t=>({...t,dueDate:fromKey(t.dueDate),doneDate:t.doneDate?fromKey(t.doneDate):null}))}catch{todos=[]}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(todos.map(t=>({...t,dueDate:dateKey(t.dueDate),doneDate:t.doneDate?dateKey(t.doneDate):null}))))}
+function weekday(d){return new Intl.DateTimeFormat('ja-JP',{weekday:'long'}).format(d)}
+function visible(){return todos.filter(t=>t.isDone?(t.doneDate&&sameDay(t.doneDate,selectedDay)):selectedDay>=today).sort((a,b)=>a.isDone===b.isDone?a.dueDate-b.dueDate:a.isDone?1:-1)}
+function dueInfo(t){if(t.isDone)return ['完了','var(--olive)'];let days=Math.round((startOfDay(t.dueDate)-selectedDay)/86400000);if(days<0)return [`期限切れ・${-days}日経過`,'var(--terra)'];if(days===0)return ['今日まで','var(--ochre)'];if(days===1)return ['明日まで','var(--navy)'];return [`あと${days}日(${t.dueDate.getMonth()+1}/${t.dueDate.getDate()}まで)`,'var(--navy)']}
+function render(){
+  $('year').textContent=selectedDay.getFullYear();$('monthday').textContent=`${selectedDay.getMonth()+1}月${selectedDay.getDate()}日`;$('weekday').textContent=weekday(selectedDay);
+  $('todayBtn').hidden=sameDay(selectedDay,today);
+  const list=visible(),done=list.filter(t=>t.isDone).length,total=list.length;
+  $('summary').textContent=total?`${total}件中 ${done}件完了`:'Todoなし';
+  $('progress').hidden=!total;$('progressFill').style.width=total?`${done/total*100}%`:'0%';
+  const root=$('tasks');root.innerHTML='';
+  if(!list.length){let msg=selectedDay<today?'この日に完了したTodoは\\nありません':sameDay(selectedDay,today)?'今日のTodoはありません\\n右下の＋ボタンで追加しましょう':'この日のTodoはありません\\n右下の＋ボタンで追加しましょう';root.innerHTML=`<div class="empty"><div class="leaf">🌿</div>${msg}</div>`;return}
+  for(const t of list){
+    const [label,color]=dueInfo(t),card=document.createElement('article');card.className='card';
+    const check=document.createElement('button');check.className='check'+(t.isDone?' done':'');check.textContent=t.isDone?'✓':'';check.setAttribute('aria-label',t.isDone?'未完了に戻す':'完了にする');check.onclick=()=>toggle(t.id);
+    const main=document.createElement('div');main.className='task-main';
+    const title=document.createElement('div');title.className='task-title'+(t.isDone?' done':'');title.textContent=t.title;
+    const due=document.createElement('span');due.className='due';due.textContent=label;due.style.color=color;due.style.background=`color-mix(in srgb, ${color} 15%, transparent)`;
+    main.append(title,due);
+    const stamp=document.createElement('div');stamp.className='done-stamp';if(t.isDone){stamp.innerHTML='<span>✧</span><span>✧</span><span>✧</span><span>✧</span>'}
+    const menu=document.createElement('button');menu.className='menu';menu.textContent='···';menu.setAttribute('aria-label','編集・削除');menu.onclick=()=>showTaskMenu(t.id);
+    card.append(check,main,stamp,menu);root.append(card);
+  }
+}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1400)}
+function toggle(id){const t=todos.find(x=>x.id===id);if(!t)return;t.isDone=!t.isDone;if(t.isDone){t.doneDate=new Date(selectedDay);justCompletedID=id;setTimeout(()=>{if(justCompletedID===id)justCompletedID=null},1500);if(navigator.vibrate)navigator.vibrate([25,40,25])}else{t.doneDate=null;if(navigator.vibrate)navigator.vibrate(12)}persist();render()}
+function showTaskMenu(id){const choice=prompt('操作を選んでください\\n1：編集\\n2：削除\\nキャンセル：何もしない');if(choice==='1')openEditor(id);if(choice==='2'&&confirm('このTodoを削除しますか？')){todos=todos.filter(t=>t.id!==id);persist();render()}}
+function openEditor(id=null){editingId=id;const t=todos.find(x=>x.id===id);$('modalTitle').textContent=t?'Todoを編集':'新しいTodo';$('taskTitle').value=t?t.title:'';$('dueDate').value=dateKey(t?t.dueDate:(selectedDay>today?selectedDay:today));$('backdrop').classList.add('open');setTimeout(()=>$('taskTitle').focus(),100)}
+function closeEditor(){$('backdrop').classList.remove('open');editingId=null}
+$('save').onclick=()=>{const title=$('taskTitle').value.trim(),date=$('dueDate').value;if(!title||!date){toast('Todoと期限日を入力してください');return}if(editingId){const t=todos.find(x=>x.id===editingId);if(t){t.title=title;t.dueDate=fromKey(date)}}else{todos.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title,dueDate:fromKey(date),isDone:false,doneDate:null})}persist();closeEditor();render()};
+$('cancel').onclick=closeEditor;$('backdrop').addEventListener('click',e=>{if(e.target===$('backdrop'))closeEditor()});$('add').onclick=()=>openEditor();
+function goTo(d){selectedDay=startOfDay(d);render()}
+$('prev').onclick=()=>goTo(addDays(selectedDay,-1));$('next').onclick=()=>goTo(addDays(selectedDay,1));$('todayBtn').onclick=()=>goTo(today);
+let touchX=0,touchY=0;$('app').addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX;touchY=e.changedTouches[0].screenY},{passive:true});$('app').addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-touchX,dy=e.changedTouches[0].screenY-touchY;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.2)goTo(addDays(selectedDay,dx>0?1:-1))},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const now=startOfDay(new Date());if(!sameDay(now,today)){if(sameDay(selectedDay,today))selectedDay=now;today=now;render()}}});
+load();render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
